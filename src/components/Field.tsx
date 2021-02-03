@@ -22,21 +22,31 @@ const Field = (props: FieldProps) => {
   const [selectedIds, setIds] = useState<string[]>([])
   const [dropdownData, filterDropdownData] = useState<Data[]>([...data])
   sdk.window.startAutoResizer()
-  console.log(sdk.window)
 
   // set inital state based on field values
   useEffect(() => {
     const fieldValues = sdk.field.getValue()
-    setIds(fieldValues !== undefined ? fieldValues.map((item:any) => item.id):[])
+    setIds(fieldValues !== undefined && fieldValues.items.length > 0 ? fieldValues.items.map((item:any) => item.id):[])
   }, [sdk.field])
 
   // Function to update video ids
-  const getVideoIds = (id:any) => {
-    return selectedIds.findIndex(selectedId => selectedId === id) === -1?
+  const updateVideoIds = (id:any) => {
+    const updatedIds = selectedIds.findIndex(selectedId => selectedId === id) === -1?
     [...selectedIds, id]:
     [...selectedIds.filter(selectedId => selectedId!== id)]
+
+    setIds(updatedIds);
+    
+    setNewValues(updatedIds);
   }
   
+  // set field value with updated state
+  const setNewValues = (updatedIds:string[]) => {
+    sdk.field.setValue({videos: data.filter((item => {
+      return updatedIds.findIndex(updatedId => item.id === updatedId) !== -1
+    }))})
+  }
+
   const getDropdownData = (searchTerm:string) => {
     const newDropdownData = [...data].filter((item:Data) => {
       return item.name.toLowerCase().includes(searchTerm.toLocaleLowerCase())
@@ -45,22 +55,16 @@ const Field = (props: FieldProps) => {
     return newDropdownData;
   }
 
-  // set field value with updated state
-  sdk.field.setValue(data.filter((item => {
-    return selectedIds.findIndex(selectedId => item.id === selectedId) !== -1
-  })))
-
-
   return (
     <Flex flexDirection={"column"} fullHeight={true} style={{minHeight: 500}}>
-      {sdk.field.getValue().length > 0 && (
+      {sdk.field.getValue().items.length > 0 && (
         <Flex flexDirection={"column"} marginBottom={"spacingL"}>
           <Paragraph style={{marginBottom: 10}}>
             Selected Videos
           </Paragraph>
           <Flex flexWrap={"wrap"}>
-            {sdk.field.getValue().map((item:WistiaItem) => (
-              <Pill style={{width: 300, marginRight: 10, marginBottom: 10}} label={item.name} onClose={() => setIds(getVideoIds(item.id))}/>
+            {sdk.field.getValue().items.map((item:WistiaItem) => (
+              <Pill style={{width: 300, marginRight: 10, marginBottom: 10}} label={item.name} onClose={() => updateVideoIds(item.id)} key={item.id}/>
             ))}
           </Flex>
         </Flex>
@@ -75,7 +79,7 @@ const Field = (props: FieldProps) => {
         >
           <DropdownList className={"dropdown-list"} maxHeight={500}>
           {[...dropdownData].map((item) => (
-            <DropdownListItem onClick={() => setIds(getVideoIds(item.id))} isActive={selectedIds.findIndex(selectedId => selectedId === item.id) !== -1}>
+            <DropdownListItem onClick={() => updateVideoIds(item.id)} isActive={selectedIds.findIndex(selectedId => selectedId === item.id) !== -1} key={`key-${item.id}`}>
               {item.name}
             </DropdownListItem>
           ))}
