@@ -1,16 +1,88 @@
-import React from 'react';
-import { Paragraph } from '@contentful/forma-36-react-components';
+import React, {useState, useEffect} from 'react';
+import { Dropdown, DropdownList, DropdownListItem, Flex, Paragraph, Pill, TextInput} from '@contentful/forma-36-react-components';
 import { FieldExtensionSDK } from '@contentful/app-sdk';
 
 interface FieldProps {
   sdk: FieldExtensionSDK;
+  data: Data[];
+}
+
+interface Data {
+  id: string;
+  name: string;
+}
+
+interface WistiaItem {
+  id:string,
+  name: string
 }
 
 const Field = (props: FieldProps) => {
-  // If you only want to extend Contentful's default editing experience
-  // reuse Contentful's editor components
-  // -> https://www.contentful.com/developers/docs/extensibility/field-editors/
-  return <Paragraph>Hello Entry Field Component</Paragraph>;
+  const {data, sdk} = props;
+  const [selectedIds, setIds] = useState<string[]>([])
+  const [dropdownData, filterDropdownData] = useState<Data[]>([...data])
+  sdk.window.startAutoResizer()
+  console.log(sdk.window)
+
+  // set inital state based on field values
+  useEffect(() => {
+    const fieldValues = sdk.field.getValue()
+    setIds(fieldValues !== undefined ? fieldValues.map((item:any) => item.id):[])
+  }, [sdk.field])
+
+  // Function to update video ids
+  const getVideoIds = (id:any) => {
+    return selectedIds.findIndex(selectedId => selectedId === id) === -1?
+    [...selectedIds, id]:
+    [...selectedIds.filter(selectedId => selectedId!== id)]
+  }
+  
+  const getDropdownData = (searchTerm:string) => {
+    const newDropdownData = [...data].filter((item:Data) => {
+      return item.name.toLowerCase().includes(searchTerm.toLocaleLowerCase())
+    })
+
+    return newDropdownData;
+  }
+
+  // set field value with updated state
+  sdk.field.setValue(data.filter((item => {
+    return selectedIds.findIndex(selectedId => item.id === selectedId) !== -1
+  })))
+
+
+  return (
+    <Flex flexDirection={"column"} fullHeight={true} style={{minHeight: 500}}>
+      {sdk.field.getValue().length > 0 && (
+        <Flex flexDirection={"column"} marginBottom={"spacingL"}>
+          <Paragraph style={{marginBottom: 10}}>
+            Selected Videos
+          </Paragraph>
+          <Flex flexWrap={"wrap"}>
+            {sdk.field.getValue().map((item:WistiaItem) => (
+              <Pill style={{width: 300, marginRight: 10, marginBottom: 10}} label={item.name} onClose={() => setIds(getVideoIds(item.id))}/>
+            ))}
+          </Flex>
+        </Flex>
+      )}
+      <Flex marginBottom={'spacingS'}>
+        <TextInput onChange={(event) => filterDropdownData(getDropdownData(event.target.value))} placeholder="Search for a video"/>
+      </Flex>
+      <Flex>
+        <Dropdown
+        isOpen={true}
+        >
+          <DropdownList maxHeight={500}>
+          {[...dropdownData].map((item) => (
+            <DropdownListItem onClick={() => setIds(getVideoIds(item.id))} isActive={selectedIds.findIndex(selectedId => selectedId === item.id) !== -1}>
+              {item.name}
+            </DropdownListItem>
+          ))}
+          </DropdownList>
+        </Dropdown>
+      </Flex>
+    </Flex>
+    );
 };
 
 export default Field;
