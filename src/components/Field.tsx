@@ -71,8 +71,9 @@ const Field = (props: FieldProps) => {
       <Flex>
         <Dropdown
         isOpen={true}
+        dropdownContainerClassName={"dropdown"}
         >
-          <DropdownList maxHeight={500}>
+          <DropdownList className={"dropdown-list"} maxHeight={500}>
           {[...dropdownData].map((item) => (
             <DropdownListItem onClick={() => setIds(getVideoIds(item.id))} isActive={selectedIds.findIndex(selectedId => selectedId === item.id) !== -1}>
               {item.name}
