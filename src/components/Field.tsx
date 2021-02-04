@@ -42,7 +42,7 @@ const Field = (props: FieldProps) => {
   
   // set field value with updated state
   const setNewValues = (updatedIds:string[]) => {
-    sdk.field.setValue({videos: data.filter((item => {
+    sdk.field.setValue({items: data.filter((item => {
       return updatedIds.findIndex(updatedId => item.id === updatedId) !== -1
     }))})
   }
@@ -57,7 +57,7 @@ const Field = (props: FieldProps) => {
 
   return (
     <Flex flexDirection={"column"} fullHeight={true} style={{minHeight: 500}}>
-      {sdk.field.getValue().items.length > 0 && (
+      {sdk.field.getValue() && sdk.field.getValue().items.length > 0 && (
         <Flex flexDirection={"column"} marginBottom={"spacingL"}>
           <Paragraph style={{marginBottom: 10}}>
             Selected Videos
