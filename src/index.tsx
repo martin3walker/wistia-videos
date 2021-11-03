@@ -1,7 +1,9 @@
 import React from 'react';
 import { render } from 'react-dom';
-
+import Field from './components/Field';
+import Config from './components/ConfigScreen';
 import {
+  AppExtensionSDK,
   FieldExtensionSDK,
   init,
   locations,
@@ -10,8 +12,6 @@ import '@contentful/forma-36-react-components/dist/styles.css';
 import '@contentful/forma-36-fcss/dist/styles.css';
 import '@contentful/forma-36-tokens/dist/css/index.css';
 import './index.css';
-
-import Field from './components/Field';
 
 
 import LocalhostWarning from './components/LocalhostWarning';
@@ -23,11 +23,11 @@ if (process.env.NODE_ENV === 'development' && window.self === window.top) {
 } else {
   init(async (sdk) => {
     const root = document.getElementById('root');
-
-    const videos = await (await fetch("https://www.contentful.com/.netlify/functions/getWistiaVideos")).json()
     
     if (sdk.location.is(locations.LOCATION_ENTRY_FIELD)) {
-      render(<Field sdk={sdk as FieldExtensionSDK} data={videos}/>, root);
+      render(<Field sdk={sdk as FieldExtensionSDK} />, root);
+    } else if(sdk.location.is(locations.LOCATION_APP_CONFIG)) {
+      render(<Config sdk={sdk as AppExtensionSDK} />, root)
     }
 
   });
