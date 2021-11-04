@@ -114,7 +114,7 @@ const Field = (props: FieldProps) => {
               placeholder="Search for a video"
             />
           </Flex>
-          <Flex style={{width: "100%", height: "300px", overflow:'scroll'}} >
+          <Flex style={{width: "100%", height: "330px", overflow:'scroll'}} >
             <Grid columns={3} columnGap={"spacingS"} rowGap={"spacingS"}>
               {[...dropdownData].map((item ) => (
                 <GridItem>
