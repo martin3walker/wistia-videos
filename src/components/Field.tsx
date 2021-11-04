@@ -1,18 +1,15 @@
 import React, {useState, useEffect} from 'react';
 import { 
-  Button,
-  Dropdown, 
-  DropdownList, 
-  DropdownListItem, 
   Grid,
   GridItem,
   Flex,
-  Modal,
   Paragraph, 
   Pill, 
   TextInput,
-  Spinner
+  Spinner,
+  Card
 } from '@contentful/forma-36-react-components';
+import styled from "styled-components"
 // import { arrayMove, SortableContainer, SortableElement } from 'react-sortable-hoc';
 import { FieldExtensionSDK } from '@contentful/app-sdk';
 import { WistiaItem } from "./ConfigScreen";
@@ -22,15 +19,15 @@ interface FieldProps {
   sdk: FieldExtensionSDK;
 }
 
-// const SortablePill = SortableElement(({value:WistaItem}) => 
-//   <Pill 
-//     style={{width: 300, marginRight: 10, marginBottom: 10}} 
-//     label={value.name} 
-//     onClose={() => updateVideoIds(value.id)} 
-//     key={value.id}
-//     onDrag={(() => console.log("hi"))}
-//   />
-// )
+const StyledImageContainer = styled.div`
+  img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 6px;
+  }
+`
 
 const Field = (props: FieldProps) => {
   const { sdk } = props;
@@ -38,7 +35,6 @@ const Field = (props: FieldProps) => {
   const [selectedIds, setIds] = useState<number[]>([])
   const [dropdownData, filterDropdownData] = useState<WistiaItem[] | []>([])
   const [loading, updateLoadingStatus] = useState(true)
-  const [isShown, setShown] = useState(false)
   sdk.window.startAutoResizer()
 
   // Set inital state based on field values
@@ -77,9 +73,19 @@ const Field = (props: FieldProps) => {
   const setNewValues = (updatedIds:number[]) => {
     sdk.field.setValue(
       {
-        items: data.filter(item => 
-          updatedIds.findIndex(updatedId => item.id === updatedId) !== -1
-        )
+        items: data
+          .filter(item => 
+            updatedIds.findIndex(updatedId => item.id === updatedId) !== -1
+          )
+          .map(item => {
+            const values = {
+              hashed_id: item.hashed_id,
+              id: item.id,
+              duration: item.duration,
+              thumbnail: item.thumbnail
+            }
+            return values;
+          })
       }
     )
   }
@@ -99,84 +105,61 @@ const Field = (props: FieldProps) => {
         <Flex 
           flexDirection={"column"} 
           fullHeight={true} 
-          style={{minHeight: 500}}
         >
+          <Flex marginBottom={'spacingS'}>
+            <TextInput 
+              onChange={
+                (event) => filterDropdownData(getDropdownData(event.target.value))
+              } 
+              placeholder="Search for a video"
+            />
+          </Flex>
+          <Flex style={{width: "100%", height: "300px", overflow:'scroll'}} >
+            <Grid columns={3} columnGap={"spacingS"} rowGap={"spacingS"}>
+              {[...dropdownData].map((item ) => (
+                <GridItem>
+                  <Card 
+                    onClick={() => updateVideoIds(item.id)} 
+                    style={{height: "100px", padding: "7px"}}
+                    selected={selectedIds.findIndex(id => item.id === id) !== -1}
+                  >
+                    <StyledImageContainer>
+                      <img src={item.thumbnail.url} alt={item.name}/>
+                    </StyledImageContainer>
+                  </Card>
+                  <Paragraph>
+                    {item.name}
+                  </Paragraph>
+                </GridItem>
+              ))}
+            </Grid>
+          </Flex>
+
           {sdk.field.getValue() && sdk.field.getValue().items.length > 0 && (
-            <Flex flexDirection={"column"} marginBottom={"spacingL"}>
+            <Flex flexDirection={"column"} marginTop={"spacingL"}>
               <Paragraph style={{marginBottom: 10}}>
                 Selected Videos
               </Paragraph>
               <Flex flexWrap={"wrap"}>
-                {sdk.field.getValue().items.map((item:WistiaItem) => (
-                  <Pill 
-                    style={{width: 300, marginRight: 10, marginBottom: 10}} 
-                    label={item.name} 
-                    onClose={() => updateVideoIds(item.id)} 
-                    key={item.id}
-                    onDrag={(() => console.log("hi"))}
-                  />
-                ))}
+                {sdk.field.getValue().items.map((item:WistiaItem) => {
+                  const fullItem = data.find(i => item.id === i.id)
+                  return (
+                    <Pill 
+                      style={{width: 300, marginRight: 10, marginBottom: 10}} 
+                      label={fullItem?.name || "Could not find video title"} 
+                      onClose={() => updateVideoIds(item.id)} 
+                      key={item.id}
+                    />
+                  )}
+                )}
               </Flex>
             </Flex>
           )}
-          <Flex>
-            {/* <Button onClick={() => setShown(true)}>Select Videos</Button>
-            <Modal
-              isShown={isShown}
-              onClose={() => setShown(false)}
-            > */}
-              <Flex marginBottom={'spacingS'}>
-                <TextInput 
-                  onChange={
-                    (event) => filterDropdownData(getDropdownData(event.target.value))
-                  } 
-                  placeholder="Search for a video"
-                />
-              </Flex>
-              <Flex>
-                <Dropdown isOpen={true}>
-                  {[...dropdownData].map((item) => (
-                    <DropdownList>
-                      <DropdownListItem 
-                        onClick={() => updateVideoIds(item.id)} 
-                        isActive={
-                          selectedIds.findIndex(selectedId => selectedId === item.id) !== -1
-                        } 
-                        key={`key-${item.id}`}
-                      >
-                        {item.name}
-                      </DropdownListItem>
-                    </DropdownList>
-                  ))}
-                </Dropdown>
-              </Flex>
-            {/* </Modal> */}
-          </Flex>
         </Flex>
       )}
     </>
   );
 };
-// const ModalSelection = (props: {dropdownData: WistiaItem[]}) => {
-//   const [isShown, setShown] = useState(false)
-//   return (
-//   <Flex>
-//     <Button onClick={() => setShown(true)}>Select Videos</Button>
-//     <Modal
-//       isShown={isShown}
-//       onClose={() => setShown(false)}
-//     >
-//       <Flex marginBottom={'spacingS'}>
-//         <TextInput 
-//           onChange={(event) => filterDropdownData(getDropdownData(event.target.value))} placeholder="Search for a video"
-//         />
-//       </Flex>
-//       <Grid>
-//         {dropdownData.map(item)}
-//       </Grid>
-//     </Modal>
-//   </Flex>
-//   )
-// }
+
 
 export default Field;

@@ -31,6 +31,11 @@ export interface WistiaItem {
   id: number;
   name: string;
   hashedId: string;
+  hashed_id?: string;
+  duration?: string;
+  thumbnail: {
+    url: string;
+  }
 }
 
 
