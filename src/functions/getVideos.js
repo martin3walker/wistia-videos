@@ -7,10 +7,14 @@ export const fetchProjects = async (bearerToken) => {
     })
   ).json();
 
+  const reducedProject = projects.map(({ id, hashedId, name }) => {
+    return { id, hashedId, name };
+  });
+
   if (projects.length) {
     return {
       success: true,
-      projects,
+      projects: reducedProject,
     };
   } else {
     return {
