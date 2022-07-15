@@ -18,7 +18,7 @@ import { css } from 'emotion';
 import { fetchProjects } from "../functions/getVideos"
 
 export interface AppInstallationParameters {
-  apiPassword?: string;
+  apiBearerToken?: string;
   projects?: WistiaItem[];
   excludedProjects?: WistiaItem[];
 }
@@ -42,7 +42,7 @@ export interface WistiaItem {
 const Config = (props: ConfigProps) => {
   const [parameters, setParameters] = useState<AppInstallationParameters>(
     {
-      apiPassword: '',
+      apiBearerToken: '',
       projects: [], 
       excludedProjects: []
     }
@@ -74,7 +74,7 @@ const Config = (props: ConfigProps) => {
         setParameters(currentParameters);
       } else {
         setParameters({
-          apiPassword:'',
+          apiBearerToken:'',
           projects: [],
           excludedProjects: []
         })
@@ -99,11 +99,11 @@ const Config = (props: ConfigProps) => {
     const getProjects:() => void = async () => {
       try {
         setLoadingStatus(true);
-        const response = await fetchProjects(parameters.apiPassword);
+        const response = await fetchProjects(parameters.apiBearerToken);
         if (response.success) {
           Notification.success("Your connection to the Wistia Data API is working.")
           setParameters({
-            apiPassword: parameters.apiPassword,
+            apiBearerToken: parameters.apiBearerToken,
             projects: response.projects,
             excludedProjects: []
           })
@@ -155,22 +155,22 @@ const Config = (props: ConfigProps) => {
         <Flex flexDirection="column" fullHeight fullWidth>
           <Heading>Wistia Videos App Configuration</Heading>
           <Paragraph>
-            Please provide your access token for the Wistia Data API.
+            Please provide your access bearer token for the Wistia Data API.
           </Paragraph>
             <Flex flexDirection="column" marginTop="spacingM">
               <TextField 
                 required 
-                name="apiPassword" 
-                id="apiPassword" 
-                labelText="Wistia Data API access token" 
+                name="apiBearerToken" 
+                id="apiBearerToken" 
+                labelText="Wistia Data API access bearer token" 
                 onChange={(event:React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>  ) => handleFieldChange(event)} 
-                value={parameters.apiPassword}
+                value={parameters.apiBearerToken}
               />
               <TextLink
-                href="https://wistia.com/support/developers/data-api#creating-and-managing-access-tokens" 
+                href="https://wistia.com/support/account-and-billing/setup#api-access" 
                 target="_blank" 
                 rel="noreferrer">
-                  How to find your access token
+                  How to find your access bearer token
               </TextLink>
             </Flex>
             {!parameters.projects?.length && (

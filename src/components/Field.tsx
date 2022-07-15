@@ -49,7 +49,7 @@ const Field = (props: FieldProps) => {
     
     (async () => {
       const videos = await fetchVideos(
-        parameters.projects, parameters.excludedProjects, parameters.apiPassword
+        parameters.projects, parameters.excludedProjects, parameters.apiBearerToken
       )
       updateData(videos)
       filterDropdownData(videos)
