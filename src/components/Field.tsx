@@ -35,6 +35,7 @@ const Field = (props: FieldProps) => {
   const [selectedIds, setIds] = useState<number[]>([])
   const [dropdownData, filterDropdownData] = useState<WistiaItem[] | []>([])
   const [loading, updateLoadingStatus] = useState(true)
+  const [error, setError] = useState(null || '')
   sdk.window.startAutoResizer()
 
   // Set inital state based on field values
@@ -43,17 +44,22 @@ const Field = (props: FieldProps) => {
     setIds(
       fieldValues !== undefined && fieldValues.items.length > 0 ? 
         fieldValues.items.map((item:WistiaItem) => item.id) :[]
-    )
-
-    const parameters:any = sdk.parameters.installation;
+    );
     
+    const parameters:any = sdk.parameters.installation;                            
     (async () => {
-      const videos = await fetchVideos(
-        parameters.projects, parameters.excludedProjects, parameters.apiBearerToken
-      )
-      updateData(videos)
-      filterDropdownData(videos)
-      updateLoadingStatus(false)
+      const videosRequest = await fetchVideos(parameters.excludedProjects, parameters.apiBearerToken
+      ) || [];
+      if (videosRequest.response.success) {
+        updateData(videosRequest.videos || [])
+        filterDropdownData(videosRequest.videos || [])
+        updateLoadingStatus(false)
+      }
+      
+      if (videosRequest.response.success === false && videosRequest.response.error) {
+        setError(videosRequest.response.error)
+        updateLoadingStatus(false)
+      }
     })();
       
   }, [sdk.field, sdk.parameters.installation])
@@ -102,6 +108,8 @@ const Field = (props: FieldProps) => {
       {loading ? (
         <Paragraph>Loading Wistia videos <Spinner color ="primary"/></Paragraph>
       ):(
+        <>
+        {data?.length > 0 && !error ? (
         <Flex 
           flexDirection={"column"} 
           fullHeight={true} 
@@ -117,7 +125,7 @@ const Field = (props: FieldProps) => {
           <Flex style={{width: "100%", height: "380px", overflow:'scroll'}} >
             <Grid columns={3} columnGap={"spacingS"} rowGap={"spacingS"}>
               {[...dropdownData].map((item ) => (
-                <GridItem>
+                <GridItem key={item.id}>
                   <Card 
                     onClick={() => updateVideoIds(item.id)} 
                     style={{height: "100px", padding: "7px"}}
@@ -156,6 +164,10 @@ const Field = (props: FieldProps) => {
             </Flex>
           )}
         </Flex>
+        ) : (
+          <Paragraph>Connection to Wistia Data API failed: {error}</Paragraph>
+        )}
+        </>
       )}
     </>
   );
