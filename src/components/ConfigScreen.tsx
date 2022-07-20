@@ -64,7 +64,7 @@ const Config = (props: ConfigProps) => {
     props.sdk.app.onConfigure(() => configureApp());
   }, [props.sdk, configureApp, parameters]);
 
-  // Called whenever the config changes
+  // Called whenever the parameters.apiBearerToken in the config changes
   useEffect(() => {
     if (parameters.apiBearerToken) {
       getProjects();
@@ -103,10 +103,13 @@ const Config = (props: ConfigProps) => {
           ...parameters
         }
         newParameters["apiBearerToken"] = value;
-        // setParameters(newParameters);
-  
-        if (newParameters["apiBearerToken"] !== parameters.apiBearerToken) {
-          await setParameters(newParameters);
+        
+        // in case the value provided is the same as the one stored, tries to fetch the projects anyway
+        // and the buttons will disappear in both the scenarios (succesful or error response)
+        if (newParameters["apiBearerToken"] === parameters.apiBearerToken) {
+          getProjects(); 
+        } else {
+          setParameters(newParameters);
         }
       }
     }
