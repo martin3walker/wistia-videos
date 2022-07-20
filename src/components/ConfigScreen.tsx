@@ -171,7 +171,7 @@ const Config = (props: ConfigProps) => {
         <Flex flexDirection="column" fullHeight fullWidth>
           <Heading>Wistia Videos App Configuration</Heading>
           <Paragraph>
-            Please provide your access bearer token for the Wistia Data API.
+            Please provide your access bearer token for the Wistia Data API. 
           </Paragraph>
             <Flex flexDirection="column" marginTop="spacingM">
               <div style={{ marginBottom: "20px" }}>
@@ -184,6 +184,13 @@ const Config = (props: ConfigProps) => {
                   onChange={() => setShowButton(true)} 
                   value={parameters.apiBearerToken}
                 />
+              </div>
+              <div style={{ marginBottom: "5px" }}>
+              <Paragraph>
+                It's very important to provide a bearer token with "read only" permissions and the "all 
+                project and video data" options enabled. The token saved in this app will be accessible 
+                by the users of this Contentful space.
+              </Paragraph>
               </div>
               <TextLink
                 href="https://wistia.com/support/account-and-billing/setup#api-access" 
